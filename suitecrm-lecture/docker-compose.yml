@@ -1,0 +1,52 @@
+services:
+  mariadb:
+    image: ${MARIADB_IMAGE}
+    restart: "${RESTART_POLICY:-no}"
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+    volumes:
+      - mariadb_data:/bitnami/mariadb
+    healthcheck:
+      test: ["CMD", "/opt/bitnami/scripts/mariadb/healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  suitecrm:
+    image: ${SUITECRM_IMAGE}
+    restart: "${RESTART_POLICY:-no}"
+    ports:
+      - "${SUITECRM_PORT_BINDING:-127.0.0.1:8080:8080}"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      SUITECRM_DATABASE_HOST: ${SUITECRM_DATABASE_HOST}
+      SUITECRM_DATABASE_PORT_NUMBER: ${SUITECRM_DATABASE_PORT_NUMBER}
+      SUITECRM_DATABASE_USER: ${SUITECRM_DATABASE_USER}
+      SUITECRM_DATABASE_PASSWORD: ${SUITECRM_DATABASE_PASSWORD}
+      SUITECRM_DATABASE_NAME: ${SUITECRM_DATABASE_NAME}
+      SUITECRM_USERNAME: ${SUITECRM_USERNAME}
+      SUITECRM_PASSWORD: ${SUITECRM_PASSWORD}
+      SUITECRM_EMAIL: ${SUITECRM_EMAIL}
+      SUITECRM_HOST: ${SUITECRM_HOST}
+      MAILPIT_SMTP_HOST: ${MAILPIT_SMTP_HOST}
+      MAILPIT_SMTP_PORT: ${MAILPIT_SMTP_PORT}
+    volumes:
+      - suitecrm_data:/bitnami/suitecrm
+      - ./scripts:/seed:ro
+
+  mailpit:
+    image: ${MAILPIT_IMAGE}
+    restart: "${RESTART_POLICY:-no}"
+    ports:
+      - "${MAILPIT_HTTP_BINDING:-127.0.0.1:8025:8025}"
+      - "${MAILPIT_SMTP_BINDING:-127.0.0.1:1025:1025}"
+
+volumes:
+  mariadb_data:
+  suitecrm_data:

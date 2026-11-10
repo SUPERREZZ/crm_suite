@@ -1,0 +1,22 @@
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+
+# Logs and temporary files
+*.log
+scratch/
+tmp/
+.cache/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE & Editor settings
+.idea/
+.vscode/
+*.swp
+*.swo
+

@@ -1,0 +1,137 @@
+name: CI/CD Deploy SuiteCRM to Cloud Hosting
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.gitignore'
+  workflow_dispatch:
+    inputs:
+      run_seed:
+        description: 'Jalankan seeder B2B data (make seed-data)'
+        required: true
+        type: boolean
+        default: true
+      run_lang:
+        description: 'Install language pack Bahasa Indonesia (make install-lang)'
+        required: true
+        type: boolean
+        default: true
+      clean_reset:
+        description: 'PERINGATAN: Reset volume & data database dari awal (docker compose down -v)'
+        required: true
+        type: boolean
+        default: false
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Lint & Validate Docker Config
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Validate Shell Scripts
+        run: |
+          bash -n scripts/wait_for_suitecrm.sh
+          echo "wait_for_suitecrm.sh syntax OK"
+
+      - name: Validate Docker Compose Configuration
+        run: |
+          cp .env.example .env
+          docker compose config --quiet
+          echo "docker-compose.yml syntax OK"
+
+  deploy:
+    name: Deploy to Cloud Server via SSH
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Prepare Remote Environment File (.env)
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > .env
+          chmod 600 .env
+
+      - name: Copy Stack Files to Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE || '' }}
+          source: 'docker-compose.yml,Makefile,scripts/,nginx/,.env'
+          target: ${{ secrets.DEPLOY_PATH || '~/suitecrm-lecture' }}
+
+      - name: Execute Deployment & Verification
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE || '' }}
+          script: |
+            set -euo pipefail
+
+            DEPLOY_DIR="${{ secrets.DEPLOY_PATH || '~/suitecrm-lecture' }}"
+            echo "[DEPLOY] Working in: ${DEPLOY_DIR}"
+            cd "${DEPLOY_DIR}"
+
+            # Pastikan scripts memiliki permission execute
+            chmod +x scripts/*.sh || true
+
+            # Pastikan binary make tersedia di server
+            if ! command -v make >/dev/null 2>&1; then
+              echo "[DEPLOY] 'make' not found, attempting to install make..."
+              if command -v sudo >/dev/null 2>&1 && command -v apt-get >/dev/null 2>&1; then
+                sudo apt-get update -qq && sudo apt-get install -y -qq make
+              fi
+            fi
+
+            # Handle opsi reset bersih jika dipicu secara manual via workflow_dispatch
+            if [ "${{ inputs.clean_reset }}" = "true" ]; then
+              echo "[DEPLOY] Clean reset requested: tearing down existing volumes..."
+              docker compose down -v || true
+            fi
+
+            echo "[DEPLOY] Pulling latest container images..."
+            docker compose pull --ignore-build-errors || true
+
+            echo "[DEPLOY] Starting Docker Compose stack..."
+            docker compose up -d
+
+            echo "[DEPLOY] Waiting for SuiteCRM initialization and installer lock..."
+            bash ./scripts/wait_for_suitecrm.sh
+
+            echo "[DEPLOY] Running bootstrap smoke test..."
+            make smoke
+
+            if [ "${{ inputs.run_seed != false }}" = "true" ]; then
+              echo "[DEPLOY] Running B2B data seeder..."
+              make seed-data
+            fi
+
+            if [ "${{ inputs.run_lang != false }}" = "true" ]; then
+              echo "[DEPLOY] Installing Indonesian language pack..."
+              make install-lang
+            fi
+
+            echo "[DEPLOY] Running 20/20 verification assertions..."
+            make verify
+
+            echo "=========================================================="
+            echo " [DEPLOY] SUCCESS: SuiteCRM is up, seeded, and verified!  "
+            echo "=========================================================="
+
