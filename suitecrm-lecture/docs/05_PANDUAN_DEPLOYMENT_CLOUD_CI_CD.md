@@ -298,6 +298,26 @@ crm.domainanda.com {
 sudo systemctl reload caddy
 ```
 
+### 6.6. Konfigurasi HTTPS / SSL (Let's Encrypt atau Self-Signed)
+
+Stack Nginx container sudah siap melayani HTTPS (port 443) dengan konfigurasi TLS modern (TLSv1.2, TLSv1.3, session cache, dan HSTS).
+
+#### Opsi A: Menggunakan Sertifikat Bawaan (Self-Signed)
+Sertifikat self-signed default sudah disertakan di `./nginx/ssl/` dan langsung aktif saat container Nginx dijalankan. Seluruh lalu lintas data dienkripsi dengan HTTPS.
+
+#### Opsi B: Mendapatkan Sertifikat Let's Encrypt Resmi (Gratis)
+Jika Anda menggunakan domain bawaan Jagoan Cloud atau domain kustom yang terhubung ke IP publik:
+```bash
+# 1. Jalankan script setup SSL dengan domain Anda:
+bash scripts/setup_ssl.sh --letsencrypt -d env-12345.jagoancloud.com --email admin@sumberkopi.id
+
+# 2. Restart Nginx:
+docker compose restart nginx
+
+# 3. Pastikan protokol di .env sudah https:
+# SUITECRM_PROTO=https
+```
+
 ---
 
 ## 7. Menguji dan Memantau Deployment

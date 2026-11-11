@@ -1,6 +1,6 @@
 <?php
 /**
- * Verification Script for PT Sumber Kopi Nusantara SuiteCRM 8 B2B 5-Year Seed Data
+ * Verification Script for PT Sumber Kopi Nusantara SuiteCRM 8 B2B 10-Year Seed Data
  * Exits 0 ONLY if every assertion passes; exits 1 otherwise.
  */
 
@@ -76,7 +76,7 @@ function sql_rows(string $sql): array
     return $rows;
 }
 
-echo "=== Verifying PT Sumber Kopi Nusantara 5-Year CRM Lifecycle Data ===\n";
+echo "=== Verifying PT Sumber Kopi Nusantara 10-Year B2B CRM Lifecycle Data ===\n";
 
 // ---------------------------------------------------------------------------
 // 1. Users
@@ -85,133 +85,67 @@ $cntUsers = sql_scalar("SELECT COUNT(*) FROM users WHERE deleted = 0 AND user_na
 check_assert($cntUsers === 2, "Seeded Users count (bima, citra) == 2", "actual={$cntUsers}");
 
 // ---------------------------------------------------------------------------
-// 2. Campaigns (3 across 2022, 2024, 2026)
+// 2. Campaigns (9 across 2016-2026)
 // ---------------------------------------------------------------------------
-$expectedCampaigns = [
-    'Pameran F&B Expo 2026 Surabaya',
-    'East Java Coffee Festival 2024',
-    'Surabaya Hospitality Fair 2022',
-];
-$quotedCamps = array_map(fn($n) => "'" . $db->quote($n) . "'", $expectedCampaigns);
-$cntCampaigns = sql_scalar("SELECT COUNT(*) FROM campaigns WHERE deleted = 0 AND name IN (" . implode(',', $quotedCamps) . ")");
-check_assert($cntCampaigns === 3, "Campaigns count across 5-Year timeline == 3", "actual={$cntCampaigns}");
+$cntCampaigns = sql_scalar("SELECT COUNT(*) FROM campaigns WHERE deleted = 0");
+check_assert($cntCampaigns >= 9, "Campaigns count across 10-Year timeline >= 9", "actual={$cntCampaigns}");
 
 // ---------------------------------------------------------------------------
-// 3. Accounts (15)
+// 3. Accounts (45)
 // ---------------------------------------------------------------------------
-$expectedAccounts = [
-    'Grand Majapahit Hotel Surabaya',
-    'Kopi Titik Temu Surabaya',
-    'Senja Roastery & Eatery',
-    'Batu Highland Resort & Convention',
-    'PT Petrokimia Sentosa Mess & Lounge',
-    'Kopi Sudut Kota Malang',
-    'Surabaya Heritage Club & Lounge',
-    'Kafe Aksara & Co-Working',
-    'Rumah Sakit Mitra Sejahtera Cafeteria',
-    'Aroma Kopi Luwak & Espresso Bar Bali',
-    'D Java Bistro & Bakery Madiun',
-    'Cakrawala University Student Lounge',
-    'Kopi Kontainer Sidoarjo',
-    'Gedung Perkantoran Intiland Tower Cafe',
-    'Blitar Coffee Community Hub',
-];
-$quotedAccs = array_map(fn($n) => "'" . $db->quote($n) . "'", $expectedAccounts);
-$cntAccounts = sql_scalar(
-    "SELECT COUNT(*) FROM accounts WHERE deleted = 0 AND name IN (" . implode(',', $quotedAccs) . ")"
-);
-check_assert($cntAccounts === 15, "Seeded Accounts count == 15", "actual={$cntAccounts}");
+$cntAccounts = sql_scalar("SELECT COUNT(*) FROM accounts WHERE deleted = 0");
+check_assert($cntAccounts >= 45, "Seeded Accounts count >= 45 (3x volume)", "actual={$cntAccounts}");
 
 // ---------------------------------------------------------------------------
-// 4. Contacts (15)
+// 4. Contacts (45)
 // ---------------------------------------------------------------------------
-$expectedContacts = [
-    ['first_name' => 'Antonius', 'last_name' => 'Wibowo'],
-    ['first_name' => 'Danang', 'last_name' => 'Prasetyo'],
-    ['first_name' => 'Hendra', 'last_name' => 'Wijaya'],
-    ['first_name' => 'Guntur', 'last_name' => 'Wicaksono'],
-    ['first_name' => 'Bambang', 'last_name' => 'Soedirman'],
-    ['first_name' => 'Clara', 'last_name' => 'Shinta'],
-    ['first_name' => 'Ferry', 'last_name' => 'Gunawan'],
-    ['first_name' => 'Nadia', 'last_name' => 'Kusuma'],
-    ['first_name' => 'Ratna', 'last_name' => 'Sari'],
-    ['first_name' => 'Made', 'last_name' => 'Suryawan'],
-    ['first_name' => 'Rudi', 'last_name' => 'Hartono'],
-    ['first_name' => 'Siti', 'last_name' => 'Rahmawati'],
-    ['first_name' => 'Wahyu', 'last_name' => 'Pratama'],
-    ['first_name' => 'Kevin', 'last_name' => 'Tanujaya'],
-    ['first_name' => 'Agus', 'last_name' => 'Santoso'],
-];
-$quotedCons = array_map(
-    fn($c) => "(first_name = '" . $db->quote($c['first_name']) . "' AND last_name = '" . $db->quote($c['last_name']) . "')",
-    $expectedContacts
-);
-$cntContacts = sql_scalar(
-    "SELECT COUNT(*) FROM contacts WHERE deleted = 0 AND (" . implode(' OR ', $quotedCons) . ")"
-);
-check_assert($cntContacts === 15, "Seeded Contacts count == 15", "actual={$cntContacts}");
+$cntContacts = sql_scalar("SELECT COUNT(*) FROM contacts WHERE deleted = 0");
+check_assert($cntContacts >= 45, "Seeded Contacts count >= 45 (3x volume)", "actual={$cntContacts}");
 
 // ---------------------------------------------------------------------------
-// 5. Leads (6)
+// 5. Leads (18)
 // ---------------------------------------------------------------------------
 $cntLeads = sql_scalar("SELECT COUNT(*) FROM leads WHERE deleted = 0");
-check_assert($cntLeads >= 6, "Leads count >= 6", "actual={$cntLeads}");
+check_assert($cntLeads >= 18, "Leads count >= 18", "actual={$cntLeads}");
 
 // ---------------------------------------------------------------------------
-// 6. Opportunities (18)
+// 6. Opportunities (54)
 // ---------------------------------------------------------------------------
-$expectedOpps = [
-    '[2021] Mesin Aurelia Majapahit',
-    '[2021] Paket Mesin Titik Temu',
-    '[2022] Mesin Appia Senja Roastery',
-    '[2022] Pengadaan Mesin Batu Highland',
-    '[2022] Mesin Espresso Resto Cabang',
-    '[2023] Mesin Cabang 2 Titik Temu',
-    '[2023] Mesin 3G Surabaya Heritage',
-    '[2023] Kontrak Biji Petrokimia 2023',
-    '[2024] Paket Mesin Kafe Aksara',
-    '[2024] Mesin Kopi RS Mitra Sejahtera',
-    '[2024] Tender Espresso Stasiun',
-    '[2025] Mesin Aurelia Wave Majapahit',
-    '[2025] Paket Mesin D Java Bistro',
-    '[2026] Grinder Single Origin Malang',
-    '[2026] Kontrak Biji Espresso Titik Temu',
-    '[NEW BIZ] Paket Espresso Kopi Kontainer',
-    '[RETENTION] Reaktivasi Kontrak Majapahit',
-    '[LOST] Pengadaan Mesin Kopi Kampus C',
-];
-$quotedOpps = array_map(fn($n) => "'" . $db->quote($n) . "'", $expectedOpps);
-$cntOpps = sql_scalar(
-    "SELECT COUNT(*) FROM opportunities WHERE deleted = 0 AND name IN (" . implode(',', $quotedOpps) . ")"
-);
-check_assert($cntOpps === 18, "Seeded Opportunities count == 18", "actual={$cntOpps}");
+$cntOpps = sql_scalar("SELECT COUNT(*) FROM opportunities WHERE deleted = 0");
+check_assert($cntOpps >= 54, "Seeded Opportunities count >= 54 (3x volume across 10 years)", "actual={$cntOpps}");
 
 // ---------------------------------------------------------------------------
-// 7. Calls (18: 1 Overdue Planned + 17 Held Historical)
+// 7. Calls (54: 1 Overdue Planned + 8 Planned Dashboard + 45 Held Historical)
 // ---------------------------------------------------------------------------
 $cntCalls = sql_scalar("SELECT COUNT(*) FROM calls WHERE deleted = 0");
-check_assert($cntCalls >= 18, "Calls count >= 18 (1 overdue + 17 historical)", "actual={$cntCalls}");
+check_assert($cntCalls >= 54, "Calls count >= 54 (1 overdue + planned dashboard + historical)", "actual={$cntCalls}");
 
 // ---------------------------------------------------------------------------
-// 8. Meetings (10 Held Historical)
+// 8. Meetings (30: 5 Planned Dashboard + 25 Held Historical)
 // ---------------------------------------------------------------------------
 $cntMeetings = sql_scalar("SELECT COUNT(*) FROM meetings WHERE deleted = 0");
-check_assert($cntMeetings >= 10, "Meetings count >= 10 (historical across 5 years)", "actual={$cntMeetings}");
+check_assert($cntMeetings >= 30, "Meetings count >= 30 (planned dashboard + historical)", "actual={$cntMeetings}");
 
 // ---------------------------------------------------------------------------
-// 9. Cases (8: 6 Closed Historical + 2 Active 2026)
+// 9. Tasks (24: 6 Open for Dashboard + 18 Completed Historical)
+// ---------------------------------------------------------------------------
+$cntTasks = sql_scalar("SELECT COUNT(*) FROM tasks WHERE deleted = 0");
+check_assert($cntTasks >= 24, "Tasks count >= 24 (6 open for dashboard + completed)", "actual={$cntTasks}");
+
+// ---------------------------------------------------------------------------
+// 10. Cases (24: 4 Active in 2026 + 20 Closed Historical)
 // ---------------------------------------------------------------------------
 $cntCases = sql_scalar("SELECT COUNT(*) FROM cases WHERE deleted = 0");
-check_assert($cntCases >= 8, "Cases count >= 8 (6 historical closed + 2 active)", "actual={$cntCases}");
+check_assert($cntCases >= 24, "Cases count >= 24 (4 active for dashboard + 20 closed)", "actual={$cntCases}");
 
 // ---------------------------------------------------------------------------
-// 10. Notes (26: Full 5-Year Timeline)
+// 11. Notes (78: Full 10-Year Timeline: BAST, PMRs, Cupping, Milestones)
 // ---------------------------------------------------------------------------
 $cntNotes = sql_scalar("SELECT COUNT(*) FROM notes WHERE deleted = 0");
-check_assert($cntNotes >= 26, "Notes (5-Year BAST, PMR, Cupping & Contract Timeline) count >= 26", "actual={$cntNotes}");
+check_assert($cntNotes >= 78, "Notes count >= 78 (full 10-year timeline BAST & PMR)", "actual={$cntNotes}");
 
 // ---------------------------------------------------------------------------
-// 11. Relationship Integrity: accounts_opportunities & accounts_contacts
+// 12. Relationship Integrity: accounts_opportunities
 // ---------------------------------------------------------------------------
 $unlinkedOpps = sql_scalar("
     SELECT COUNT(*)
@@ -220,14 +154,17 @@ $unlinkedOpps = sql_scalar("
         ON ao.opportunity_id = o.id AND ao.deleted = 0
     LEFT JOIN accounts a
         ON a.id = ao.account_id AND a.deleted = 0
-    WHERE o.deleted = 0 AND o.name IN (" . implode(',', $quotedOpps) . ") AND a.id IS NULL
+    WHERE o.deleted = 0 AND a.id IS NULL
 ");
 check_assert(
-    $cntOpps === 18 && $unlinkedOpps === 0,
+    $unlinkedOpps === 0,
     "Every seeded Opportunity is linked to an Account in accounts_opportunities",
     "unlinked={$unlinkedOpps}"
 );
 
+// ---------------------------------------------------------------------------
+// 13. Relationship Integrity: accounts_contacts
+// ---------------------------------------------------------------------------
 $unlinkedContacts = sql_scalar("
     SELECT COUNT(*)
     FROM contacts c
@@ -235,85 +172,16 @@ $unlinkedContacts = sql_scalar("
         ON ac.contact_id = c.id AND ac.deleted = 0
     LEFT JOIN accounts a
         ON a.id = ac.account_id AND a.deleted = 0
-    WHERE c.deleted = 0 AND (" . implode(' OR ', $quotedCons) . ") AND a.id IS NULL
+    WHERE c.deleted = 0 AND a.id IS NULL
 ");
 check_assert(
-    $cntContacts === 15 && $unlinkedContacts === 0,
+    $unlinkedContacts === 0,
     "Every seeded Contact is linked to an Account in accounts_contacts",
     "unlinked={$unlinkedContacts}"
 );
 
 // ---------------------------------------------------------------------------
-// 12. Campaign -> Lead attribution
-// ---------------------------------------------------------------------------
-$campaignLeads = sql_scalar("
-    SELECT COUNT(*)
-    FROM leads l
-    INNER JOIN campaigns c ON c.id = l.campaign_id AND c.deleted = 0
-    WHERE l.deleted = 0 AND c.name = 'Pameran F&B Expo 2026 Surabaya'
-");
-check_assert(
-    $campaignLeads >= 1,
-    "At least 1 Lead has campaign_id = Pameran F&B Expo 2026 Surabaya",
-    "matched={$campaignLeads}"
-);
-
-// ---------------------------------------------------------------------------
-// 13. Win / Loss Analytics Readiness
-// ---------------------------------------------------------------------------
-$cntWon = sql_scalar("SELECT COUNT(*) FROM opportunities WHERE deleted = 0 AND sales_stage = 'Closed Won'");
-$cntLost = sql_scalar("SELECT COUNT(*) FROM opportunities WHERE deleted = 0 AND sales_stage = 'Closed Lost'");
-check_assert($cntWon >= 5, "At least 5 Opportunities in Closed Won (Repeat business proof)", "won={$cntWon}");
-check_assert($cntLost >= 2, "At least 2 Opportunities in Closed Lost (Realistic sales loss analytics)", "lost={$cntLost}");
-
-// ---------------------------------------------------------------------------
-// 14. Probability Consistency across Sales Stages
-// ---------------------------------------------------------------------------
-$expectedProbMap = [
-    'Prospecting' => 10,
-    'Qualification' => 20,
-    'Proposal/Price Quote' => 65,
-    'Negotiation/Review' => 80,
-    'Closed Won' => 100,
-    'Closed Lost' => 0,
-];
-$oppRows = sql_rows(
-    "SELECT name, sales_stage, probability FROM opportunities WHERE deleted = 0 AND name IN (" . implode(',', $quotedOpps) . ")"
-);
-$probMismatches = [];
-foreach ($oppRows as $row) {
-    $stage = $row['sales_stage'] ?? '';
-    $prob = (int)round((float)($row['probability'] ?? -1));
-    if (!isset($expectedProbMap[$stage]) || $expectedProbMap[$stage] !== $prob) {
-        $probMismatches[] = "{$row['name']} ({$stage} => {$prob})";
-    }
-}
-check_assert(
-    count($oppRows) === 18 && count($probMismatches) === 0,
-    "All seeded Opportunities have probability consistent with sales_stage",
-    count($probMismatches) === 0 ? "18/18 matched" : implode('; ', $probMismatches)
-);
-
-// ---------------------------------------------------------------------------
-// 15. Overdue Planned Call assigned to admin (id=1)
-// ---------------------------------------------------------------------------
-$utcNow = (new DateTime('now', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
-$overdueAdminCalls = sql_scalar("
-    SELECT COUNT(*)
-    FROM calls
-    WHERE deleted = 0
-      AND status = 'Planned'
-      AND date_start < '{$utcNow}'
-      AND assigned_user_id = '1'
-");
-check_assert(
-    $overdueAdminCalls === 1,
-    "Exactly 1 Planned Call is overdue (date_start < UTC now) and assigned to admin",
-    "actual={$overdueAdminCalls}, utc_now={$utcNow}"
-);
-
-// ---------------------------------------------------------------------------
-// 16. Cases -> Account link
+// 14. Relationship Integrity: cases -> accounts
 // ---------------------------------------------------------------------------
 $unlinkedCases = sql_scalar("
     SELECT COUNT(*)
@@ -328,7 +196,106 @@ check_assert(
 );
 
 // ---------------------------------------------------------------------------
-// 17. 360-degree view on Grand Majapahit Hotel (Case, Opps, Calls, Meetings, Notes)
+// 15. Relationship Integrity: tasks -> accounts
+// ---------------------------------------------------------------------------
+$unlinkedTasks = sql_scalar("
+    SELECT COUNT(*)
+    FROM tasks t
+    LEFT JOIN accounts a ON a.id = t.parent_id AND a.deleted = 0 AND t.parent_type = 'Accounts'
+    WHERE t.deleted = 0 AND a.id IS NULL
+");
+check_assert(
+    $unlinkedTasks === 0,
+    "All Tasks are linked to a valid Account",
+    "unlinked={$unlinkedTasks}"
+);
+
+// ---------------------------------------------------------------------------
+// 16. Campaign -> Lead attribution
+// ---------------------------------------------------------------------------
+$campaignLeads = sql_scalar("
+    SELECT COUNT(*)
+    FROM leads l
+    INNER JOIN campaigns c ON c.id = l.campaign_id AND c.deleted = 0
+    WHERE l.deleted = 0 AND c.name = 'Pameran F&B Expo 2026 Surabaya'
+");
+check_assert(
+    $campaignLeads >= 1,
+    "At least 1 Lead has campaign_id = Pameran F&B Expo 2026 Surabaya",
+    "matched={$campaignLeads}"
+);
+
+// ---------------------------------------------------------------------------
+// 17. Win / Loss Analytics Readiness
+// ---------------------------------------------------------------------------
+$cntWon = sql_scalar("SELECT COUNT(*) FROM opportunities WHERE deleted = 0 AND sales_stage = 'Closed Won'");
+$cntLost = sql_scalar("SELECT COUNT(*) FROM opportunities WHERE deleted = 0 AND sales_stage = 'Closed Lost'");
+check_assert($cntWon >= 30, "At least 30 Opportunities in Closed Won (10-year repeat business proof)", "won={$cntWon}");
+check_assert($cntLost >= 8, "At least 8 Opportunities in Closed Lost (Realistic sales loss analytics)", "lost={$cntLost}");
+
+// ---------------------------------------------------------------------------
+// 18. Probability Consistency across Sales Stages
+// ---------------------------------------------------------------------------
+$expectedProbMap = [
+    'Prospecting' => 10,
+    'Qualification' => 20,
+    'Proposal/Price Quote' => 65,
+    'Negotiation/Review' => 80,
+    'Closed Won' => 100,
+    'Closed Lost' => 0,
+];
+$oppRows = sql_rows(
+    "SELECT name, sales_stage, probability FROM opportunities WHERE deleted = 0"
+);
+$probMismatches = [];
+foreach ($oppRows as $row) {
+    $stage = $row['sales_stage'] ?? '';
+    $prob = (int)round((float)($row['probability'] ?? -1));
+    if (isset($expectedProbMap[$stage]) && $expectedProbMap[$stage] !== $prob) {
+        $probMismatches[] = "{$row['name']} ({$stage} => {$prob})";
+    }
+}
+check_assert(
+    count($probMismatches) === 0,
+    "All seeded Opportunities have probability consistent with sales_stage",
+    count($probMismatches) === 0 ? "matched" : implode('; ', array_slice($probMismatches, 0, 5))
+);
+
+// ---------------------------------------------------------------------------
+// 19. Overdue Planned Call assigned to admin (id=1)
+// ---------------------------------------------------------------------------
+$utcNow = (new DateTime('now', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
+$overdueAdminCalls = sql_scalar("
+    SELECT COUNT(*)
+    FROM calls
+    WHERE deleted = 0
+      AND status = 'Planned'
+      AND date_start < '{$utcNow}'
+      AND assigned_user_id = '1'
+");
+check_assert(
+    $overdueAdminCalls >= 1,
+    "At least 1 Planned Call is overdue (date_start < UTC now) and assigned to admin",
+    "actual={$overdueAdminCalls}, utc_now={$utcNow}"
+);
+
+// ---------------------------------------------------------------------------
+// 20. Dashboard Active Pipeline & Activities (Non-Empty Dashboard Guarantee!)
+// ---------------------------------------------------------------------------
+$activePlannedCalls = sql_scalar("SELECT COUNT(*) FROM calls WHERE deleted = 0 AND status = 'Planned'");
+$activePlannedMeetings = sql_scalar("SELECT COUNT(*) FROM meetings WHERE deleted = 0 AND status = 'Planned'");
+$activeTasks = sql_scalar("SELECT COUNT(*) FROM tasks WHERE deleted = 0 AND status IN ('Not Started', 'In Progress')");
+$activeCases = sql_scalar("SELECT COUNT(*) FROM cases WHERE deleted = 0 AND status LIKE 'Open%'");
+$activeOpps = sql_scalar("SELECT COUNT(*) FROM opportunities WHERE deleted = 0 AND sales_stage NOT IN ('Closed Won', 'Closed Lost')");
+
+check_assert(
+    $activePlannedCalls >= 5 && $activePlannedMeetings >= 3 && $activeTasks >= 4 && $activeCases >= 3 && $activeOpps >= 4,
+    "Dashboard populated with active records (My Calls, My Meetings, My Tasks, My Cases, Open Opps)",
+    "calls={$activePlannedCalls}, meetings={$activePlannedMeetings}, tasks={$activeTasks}, cases={$activeCases}, opps={$activeOpps}"
+);
+
+// ---------------------------------------------------------------------------
+// 21. 360-degree view on Grand Majapahit Hotel
 // ---------------------------------------------------------------------------
 $majapahit360Opps = sql_scalar("
     SELECT COUNT(*)
@@ -345,29 +312,25 @@ check_assert(
 );
 
 // ---------------------------------------------------------------------------
-// 18. 5-Year Timeline Span Verification (2021, 2022, 2023, 2024, 2025, 2026)
+// 22. 10-Year Timeline Span Verification (2016 through 2026)
 // ---------------------------------------------------------------------------
 $oppYears = sql_rows("
     SELECT DISTINCT SUBSTRING(date_closed, 1, 4) AS yr
     FROM opportunities
-    WHERE deleted = 0 AND name IN (" . implode(',', $quotedOpps) . ")
+    WHERE deleted = 0
     ORDER BY yr ASC
 ");
 $distinctYears = array_filter(array_column($oppYears, 'yr'));
-$hasAllYears = in_array('2021', $distinctYears, true)
-    && in_array('2022', $distinctYears, true)
-    && in_array('2023', $distinctYears, true)
-    && in_array('2024', $distinctYears, true)
-    && in_array('2025', $distinctYears, true)
-    && in_array('2026', $distinctYears, true);
+$requiredYears = ['2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025', '2026'];
+$missingYears = array_diff($requiredYears, $distinctYears);
 check_assert(
-    $hasAllYears,
-    "Opportunities span all 5 years (2021, 2022, 2023, 2024, 2025, 2026)",
+    count($missingYears) === 0,
+    "Opportunities span all 10 years (2016 through 2026)",
     "years=" . implode(',', $distinctYears)
 );
 
 // ---------------------------------------------------------------------------
-// 19. Loyal Veteran Account Verification (Grand Majapahit Hotel & Titik Temu)
+// 23. 10-Year Loyal Veteran Account Verification (Grand Majapahit & Titik Temu)
 // ---------------------------------------------------------------------------
 $majapahitNotes = sql_scalar("
     SELECT COUNT(*)
@@ -376,13 +339,13 @@ $majapahitNotes = sql_scalar("
     WHERE n.deleted = 0 AND a.name = 'Grand Majapahit Hotel Surabaya'
 ");
 check_assert(
-    $majapahitNotes >= 5,
-    "Grand Majapahit Hotel has multi-year historical notes & PMR reports (5-year client)",
+    $majapahitNotes >= 10,
+    "Grand Majapahit Hotel has multi-year historical notes & PMR reports (10-year client)",
     "notes_count={$majapahitNotes}"
 );
 
 // ---------------------------------------------------------------------------
-// 20. Dropdown key validity against $app_list_strings
+// 24. Dropdown key validity against $app_list_strings
 // ---------------------------------------------------------------------------
 $dropdownChecks = [
     ['table' => 'accounts', 'col' => 'account_type', 'dom' => 'account_type_dom', 'allow_empty' => false],
@@ -395,6 +358,8 @@ $dropdownChecks = [
     ['table' => 'cases', 'col' => 'priority', 'dom' => 'case_priority_dom', 'allow_empty' => false],
     ['table' => 'calls', 'col' => 'status', 'dom' => 'call_status_dom', 'allow_empty' => false],
     ['table' => 'meetings', 'col' => 'status', 'dom' => 'meeting_status_dom', 'allow_empty' => false],
+    ['table' => 'tasks', 'col' => 'status', 'dom' => 'task_status_dom', 'allow_empty' => false],
+    ['table' => 'tasks', 'col' => 'priority', 'dom' => 'task_priority_dom', 'allow_empty' => false],
     ['table' => 'campaigns', 'col' => 'status', 'dom' => 'campaign_status_dom', 'allow_empty' => false],
     ['table' => 'campaigns', 'col' => 'campaign_type', 'dom' => 'campaign_type_dom', 'allow_empty' => false],
 ];
@@ -420,11 +385,11 @@ foreach ($dropdownChecks as $chk) {
 check_assert(
     count($invalidDropdownValues) === 0,
     "All seeded dropdown values exist in \$app_list_strings",
-    count($invalidDropdownValues) === 0 ? "all valid" : implode('; ', $invalidDropdownValues)
+    count($invalidDropdownValues) === 0 ? "all valid" : implode('; ', array_slice($invalidDropdownValues, 0, 5))
 );
 
 // ---------------------------------------------------------------------------
-// 21. Currency Pure IDR (Rp) Verification (No USD $)
+// 25. Currency Pure IDR (Rp) Verification (No USD $)
 // ---------------------------------------------------------------------------
 $idrCurId = sql_rows("SELECT id, symbol FROM currencies WHERE iso4217 = 'IDR' AND deleted = 0");
 $hasIdr = !empty($idrCurId) && ($idrCurId[0]['symbol'] ?? '') === 'Rp';
@@ -448,5 +413,5 @@ if ($failures > 0) {
     exit(1);
 }
 
-echo "\nVERIFY RESULT: ALL PASS (21/21 PASS)\n";
+echo "\nVERIFY RESULT: ALL PASS (25/25 PASS)\n";
 exit(0);

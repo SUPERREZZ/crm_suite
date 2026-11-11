@@ -85,7 +85,7 @@ Perintah ini akan secara atomik:
 4. Menguji bootstrap core (`smoke_bootstrap.php`).
 5. Memasukkan seluruh data seed B2B PT Sumber Kopi Nusantara secara idempotent (`seed_suitecrm_b2b.php`).
 6. Menginstal paket Bahasa Indonesia (`install_id_lang.php`).
-7. Memverifikasi 20 assertion integritas relasi CRM 5 tahun (`verify_seed.php` - 20/20 PASS).
+8. Memverifikasi 25 assertion integritas relasi CRM 10 tahun (`verify_seed.php` - 25/25 PASS).
 Sistem kembali 100% ke kondisi demonstrasi awal yang sempurna dalam hitungan menit.
 
 ---
@@ -94,9 +94,9 @@ Sistem kembali 100% ke kondisi demonstrasi awal yang sempurna dalam hitungan men
 **Jawaban:**
 Melalui kombinasi data arsitektur berikut:
 1. **Kolom `opportunities.opportunity_type`:**  
-   Membedakan secara tegas antara `'New Business'` (transaksi mesin pertama kali, misal Grand Majapahit 2021) dan `'Existing Business'` (pengadaan unit ke-2 2025 atau addendum perpanjangan kontrak biji kopi 2026).
-2. **Multi-Year Timeline di Subpanel History & Notes:**  
-   Akun loyal seperti *Grand Majapahit Hotel Surabaya* memiliki deretan catatan kronologis Berita Acara Serah Terima (BAST) 2021 & 2025, laporan tahunan *Preventive Maintenance Report* (PMR) 2022-2025, dan notulen negosiasi perpanjangan kontrak.
+   Membedakan secara tegas antara `'New Business'` (transaksi mesin pertama kali, misal Grand Majapahit 2016) dan `'Existing Business'` (pengadaan unit ke-2 2021, unit ke-3 2025, atau addendum kontrak 2026/2027).
+2. **Multi-Year Timeline di Subpanel History, Calls, Meetings & Notes:**  
+   Akun loyal 10 tahun seperti *Grand Majapahit Hotel Surabaya* dan *Kopi Titik Temu* memiliki deretan catatan kronologis Berita Acara Serah Terima (BAST) 2016-2025, laporan tahunan *Preventive Maintenance Report* (PMR) 2017-2025, hasil evaluasi cupping panen raya, dan piagam apresiasi mitra 10 tahun.
 3. **Metrik Analisis Churn & Customer Lifetime Value (CLV):**  
-   Sistem analitik CRM mengakumulasikan seluruh nilai deal *Closed Won* yang berhasil ditutup dari satu akun selama 5 tahun (mencapai lebih dari Rp 340+ Juta untuk Grand Majapahit), memberikan justifikasi bagi tim Customer Success untuk memberikan layanan prioritas (VIP SLA).
+   Sistem analitik CRM mengakumulasikan seluruh nilai deal *Closed Won* yang berhasil ditutup dari satu akun selama 10 tahun (mencapai lebih dari Rp 470+ Juta untuk Grand Majapahit), memberikan justifikasi bagi tim Customer Success untuk memberikan layanan prioritas (VIP SLA).
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # deploy_all.sh — Pengganti 'make all' untuk server tanpa 'make'
-# Menjalankan seluruh stack SuiteCRM 8 B2B Demo secara otomatis.
+# Menjalankan seluruh stack SuiteCRM 8 B2B Demo secara otomatis (HTTP + HTTPS).
 # ==============================================================================
 set -euo pipefail
 
@@ -41,6 +41,18 @@ fi
 
 echo "[INFO] File .env ditemukan. Melanjutkan deployment..."
 
+# 1.1 Pastikan sertifikat SSL tersedia untuk Nginx HTTPS
+mkdir -p nginx/ssl
+if [ ! -f "nginx/ssl/cert.pem" ] || [ ! -f "nginx/ssl/key.pem" ]; then
+    echo "[SETUP] Sertifikat SSL belum ditemukan di nginx/ssl/. Membuat self-signed SSL..."
+    openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+        -keyout nginx/ssl/key.pem -out nginx/ssl/cert.pem \
+        -subj "/CN=localhost/O=PT Sumber Kopi Nusantara/C=ID" 2>/dev/null || true
+    chmod 600 nginx/ssl/key.pem 2>/dev/null || true
+    chmod 644 nginx/ssl/cert.pem 2>/dev/null || true
+    echo "[SETUP] Sertifikat SSL default siap."
+fi
+
 # 2. Jalankan docker compose (profile nginx otomatis dari COMPOSE_PROFILES di .env)
 echo ""
 echo "============================================"
@@ -63,12 +75,12 @@ echo " [3/6] Smoke test bootstrap SuiteCRM...     "
 echo "============================================"
 docker compose exec -T -u "${WEB_USER}" -e SUITECRM_ROOT="${SUITECRM_ROOT}" suitecrm "${PHP_BIN}" /seed/smoke_bootstrap.php
 
-# 5. Seeding data B2B 5 Tahun
+# 5. Seeding data B2B 10 Tahun (45 Accounts, 54 Opps, 54 Calls, 30 Meetings, 24 Tasks, 24 Cases, 78 Notes)
 echo ""
 echo "============================================"
-echo " [4/6] Seeding data B2B 5 Tahun...          "
+echo " [4/6] Seeding data B2B 10 Tahun (2016-2026)"
 echo "============================================"
-echo "[INFO] Memasukkan 15 Accounts, 15 Contacts, 18 Opportunities, dll."
+echo "[INFO] Memasukkan data B2B lengkap 10 tahun (3x volume)..."
 docker compose exec -T -u "${WEB_USER}" -e SUITECRM_ROOT="${SUITECRM_ROOT}" suitecrm "${PHP_BIN}" /seed/seed_suitecrm_b2b.php
 
 # 6. Install paket bahasa Indonesia
@@ -78,10 +90,10 @@ echo " [5/6] Install paket Bahasa Indonesia...    "
 echo "============================================"
 docker compose exec -T -u "${WEB_USER}" -e SUITECRM_ROOT="${SUITECRM_ROOT}" suitecrm "${PHP_BIN}" /seed/install_id_lang.php
 
-# 7. Verifikasi 21/21 assertions
+# 7. Verifikasi
 echo ""
 echo "============================================"
-echo " [6/6] Verifikasi integritas data (21/21)..."
+echo " [6/6] Verifikasi integritas data...        "
 echo "============================================"
 docker compose exec -T -u "${WEB_USER}" -e SUITECRM_ROOT="${SUITECRM_ROOT}" suitecrm "${PHP_BIN}" /seed/verify_seed.php
 
@@ -93,7 +105,8 @@ echo ""
 echo " Akses SuiteCRM di browser:"
 if grep -q "COMPOSE_PROFILES=nginx" .env 2>/dev/null; then
     DOMAIN=$(grep "^SUITECRM_HOST=" .env | cut -d= -f2 | tr -d '[:space:]')
-    echo "   URL  : http://${DOMAIN:-localhost}"
+    echo "   HTTPS: https://${DOMAIN:-localhost} (Disarankan)"
+    echo "   HTTP : http://${DOMAIN:-localhost}"
 else
     echo "   URL  : http://localhost:8080"
 fi
