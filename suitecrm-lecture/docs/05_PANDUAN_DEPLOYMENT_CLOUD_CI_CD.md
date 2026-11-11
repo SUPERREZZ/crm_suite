@@ -244,6 +244,45 @@ Dengan konfigurasi ini, port `8080` hanya terbuka di localhost VPS (`127.0.0.1`)
 
 ---
 
+### 6.5. Setup Khusus Jagoan Cloud (Docker Engine + Domain Bawaan)
+Jika Anda menggunakan layanan **Jagoan Cloud** (Jelastic PaaS / Cloud VPS) yang menjalankan **Docker Engine** dan ingin menggunakan **domain bawaan** (contoh: `env-xxxxxx.jagoancloud.com` atau `app-xxxx.jagoancloud.com`):
+
+Anda **TIDAK PERLU menginstal Nginx manual di OS server**. Kami telah menyertakan container Nginx siap pakai langsung di dalam `docker-compose.yml` yang menggunakan konfigurasi wildcard [`nginx/docker-nginx.conf`](file:///c:/Users/Pongo/Proyek/python/crm_suite/suitecrm-lecture/nginx/docker-nginx.conf) (otomatis menangani domain bawaan apa pun):
+
+1. **Konfigurasi file `.env` di server Jagoan Cloud Anda:**
+   ```ini
+   # Aktifkan reverse proxy Nginx di dalam Docker Engine
+   COMPOSE_PROFILES=nginx
+
+   # Port binding
+   NGINX_PORT_BINDING=80:80
+   SUITECRM_PORT_BINDING=127.0.0.1:8080:8080
+   MAILPIT_HTTP_BINDING=8025:8025
+
+   # Masukkan domain bawaan dari dashboard Jagoan Cloud Anda (tanpa http:// dan tanpa :8080)
+   SUITECRM_HOST=env-xxxxxx.jagoancloud.com
+   ```
+
+2. **Jalankan Stack di Terminal Web / SSH Jagoan Cloud:**
+   ```bash
+   make all
+   ```
+   *Atau langkah demi langkah:*
+   ```bash
+   docker compose up -d
+   bash scripts/wait_for_suitecrm.sh
+   make smoke
+   make seed-data
+   make install-lang
+   make verify
+   ```
+
+3. **Akses Langsung di Browser:**
+   - **SuiteCRM 8:** Buka `http://env-xxxxxx.jagoancloud.com` (langsung di port 80 standar, tanpa perlu mengetik `:8080`).
+   - **Mailpit Web UI (Email Testing):** Buka `http://env-xxxxxx.jagoancloud.com:8025`.
+
+---
+
 ### Opsi Alternatif: Menggunakan Caddy (Auto-HTTPS Tanpa Certbot)
 Jika di server lain Anda ingin menggunakan Caddy:
 ```bash

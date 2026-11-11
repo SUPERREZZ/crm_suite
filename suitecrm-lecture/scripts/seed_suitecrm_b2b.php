@@ -240,6 +240,13 @@ try {
     $configurator->config['default_currency_symbol'] = 'Rp';
     $configurator->config['currency'] = 'IDR';
     $configurator->config['default_currency_significant_digits'] = 0;
+
+    $crmHost = getenv('SUITECRM_HOST') ?: 'localhost';
+    if ($crmHost !== 'localhost' && $crmHost !== '127.0.0.1') {
+        $configurator->config['site_url'] = 'http://' . $crmHost;
+        echo "[CONFIG] Set site_url to http://{$crmHost} (clean reverse proxy)\n";
+    }
+
     $configurator->saveConfig();
     echo "[CONFIG] System default currency set to IDR (Rp)\n";
 
